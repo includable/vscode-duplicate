@@ -1,100 +1,48 @@
-import { stat } from 'fs/promises';
-import { basename, dirname } from 'path';
-import { FileType, Uri, window, workspace } from 'vscode';
+import { basename, dirname } from "path";
+import { Uri, commands, window, workspace } from "vscode";
 
-function getCopyName(original: string, isDirectory: boolean): [string, number] {
-    const lastIndex = original.lastIndexOf('.');
-
-    if (lastIndex === -1 || isDirectory) {
-        const newName = original + '-copy';
-        return [
-            newName,
-            newName.length,
-        ]
+function getCopyName(original: string, attempt: number): string {
+    let lastIndex = original.lastIndexOf(".");
+    if (original.includes(".test.")) {
+        lastIndex -= 5;
     }
 
-	let name = original.slice(0, lastIndex);
-	let ext = original.slice(lastIndex + 1);
+    let name = lastIndex === -1 ? original : original.slice(0, lastIndex);
+    let ext = lastIndex === -1 ? "" : original.slice(lastIndex);
 
-	if (lastIndex !== 0) {
-		name += '-copy'
-	}
-	else {
-		ext += '-copy'
-	}
+    name += "-copy";
+    name += attempt ? attempt + 1 : "";
+    name += ext;
 
-	let newName;
-	let newLength;
+    return name;
+}
 
-	if (lastIndex === -1) {
-		newName = name;
-		newLength = newName.length;
-	}
-	else if (lastIndex === 0) {
-		newName = '.' + ext;
-		newLength = newName.length;
-	} else {
-		newName = name + '.' + ext;
-		newLength = name.length;
-	}
+async function executeCopy(uri: Uri, attempt: number = 0) {
+    const { fsPath } = uri;
+    const file = basename(fsPath);
+    const copyName = getCopyName(file, attempt);
 
-	return [
-		newName,
-		newLength
-	]
+    const directory = Uri.file(dirname(fsPath));
+    const oldFile = Uri.file(fsPath);
+    const newFile = Uri.joinPath(directory, copyName);
+
+    await workspace.fs.copy(oldFile, newFile);
+
+    await window.showTextDocument(newFile);
+    await commands.executeCommand("revealInExplorer");
+    await commands.executeCommand("renameFile");
 }
 
 export default async function duplicate(uri: Uri) {
-    const { fsPath } = uri
-    const file = basename(fsPath)
-    const stats = await stat(fsPath)
-    const [copyName, copyNameLength] = getCopyName(file, stats.isDirectory())
-
-    const input = await window.showInputBox({
-        title: 'Enter a name for the duplicated file',
-        value: copyName,
-        valueSelection: [0, copyNameLength]
-    })
-
-    if (input === undefined) {
-        return
+    let attempt = 0;
+    while (attempt < 10) {
+        try {
+            await executeCopy(uri, attempt);
+            return;
+        } catch (error) {
+            attempt++;
+        }
     }
 
-    const directory = Uri.file(dirname(fsPath))
-    const oldFile = Uri.file(fsPath)
-    const oldStats = await workspace.fs.stat(oldFile)
-    const newFile = Uri.joinPath(directory, input)
-
-    try {
-        const newStats = await workspace.fs.stat(newFile)
-        if (oldStats.type !== newStats.type) {
-            window.showErrorMessage('Can\'t change resource type!')
-            return
-        }
-
-        switch (newStats.type) {
-            case FileType.File:
-                const answer = await window.showQuickPick(['Yes', 'No'], {
-                    title: 'A file with this name does already exist. Overwrite?',
-                    canPickMany: false,
-                    ignoreFocusOut: true,
-                })
-
-                if (answer !== 'Yes') {
-                    return
-                }
-                break;
-            default:
-                window.showErrorMessage('Refusing to overwrite existing ' + FileType[newStats.type])
-                return
-        }
-    } catch (error) { }
-
-    try {
-        await workspace.fs.copy(oldFile, newFile, {
-            overwrite: true
-        })
-    } catch (error) {
-        console.error(error)
-    }
+    window.showErrorMessage("Refusing to overwrite existing copy!");
 }
