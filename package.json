@@ -18,9 +18,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tschoffelen/vscode-duplicate.git"
+    "url": "https://github.com/includable/vscode-duplicate.git"
   },
-  "homepage": "https://github.com/tschoffelen/vscode-duplicate#readme",
+  "homepage": "https://github.com/includable/vscode-duplicate#readme",
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
