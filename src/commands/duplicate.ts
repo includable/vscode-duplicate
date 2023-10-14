@@ -46,9 +46,9 @@ export default async function duplicate(uri: Uri) {
     try {
       await executeCopy(uri, attempt);
       return;
-    } catch (error) {
+    } catch (error: any) {
       attempt++;
-      err = error?.message || error?.toString();
+      err = error && 'message' in error ? error?.message: error?.toString();
     }
   }
 
