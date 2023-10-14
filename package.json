@@ -2,7 +2,7 @@
   "name": "file-duplicate",
   "displayName": "Duplicate File",
   "description": "Duplicate files in the files tree.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "includable",
   "engines": {
     "vscode": "^1.75.0"
