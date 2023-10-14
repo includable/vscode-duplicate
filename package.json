@@ -1,8 +1,8 @@
 {
-  "name": "duplicate-file",
-  "displayName": "Duplicate Files",
-  "description": "Duplicate files.",
-  "version": "0.2.0",
+  "name": "file-duplicate",
+  "displayName": "Duplicate File",
+  "description": "Duplicate files in the files tree.",
+  "version": "1.0.1",
   "publisher": "includable",
   "engines": {
     "vscode": "^1.75.0"
@@ -22,17 +22,18 @@
   },
   "homepage": "https://github.com/includable/vscode-duplicate#readme",
   "main": "./out/extension.js",
+  "icon": "icon.png",
   "contributes": {
     "commands": [
       {
-        "command": "duplicate-file.execute",
+        "command": "file-duplicate.execute",
         "title": "Duplicate"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "duplicate-file.execute",
+          "command": "file-duplicate.execute",
           "group": "5_cutcopypaste@99"
         }
       ]
