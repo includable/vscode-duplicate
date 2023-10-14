@@ -30,13 +30,11 @@ async function executeCopy(uri: Uri, attempt: number = 0) {
 
   try {
     await window.showTextDocument(newFile);
-  } catch (e) {}
-  try {
     await commands.executeCommand("revealInExplorer");
-  } catch (e) {}
-  try {
     await commands.executeCommand("renameFile");
-  } catch (e) {}
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export default async function duplicate(uri: Uri) {
